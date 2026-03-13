@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು - Doodle Interactive Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* ================== ಡೂಡಲ್-ಸ್ಕೆಚ್ ಕಲರ್ ಕಾಂಬಿನೇಷನ್ ================== */
+:root {
+  --bg-grid: #f5fcff;
+  --black-ink: #1a1a1a;
+  --pink-pastel: #ff99d6;
+  --blue-pastel: #99e6ff;
+  --yellow-pastel: #fff099;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans Kannada', 'Nunito', sans-serif;
+  /* ಹಿಂದೆ ಕಾಣುವ ಬಿಳಿ & ನೀಲಿಯ ಸ್ಕೆಚ್‌ಬುಕ್ ಗ್ರಿಡ್ (Notebook Grid) */
+  background-color: var(--bg-grid);
+  background-image: 
+    linear-gradient(rgba(153, 230, 255, 0.4) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(153, 230, 255, 0.4) 2px, transparent 2px);
+  background-size: 50px 50px;
+  background-position: center;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ================== THE MAIN WHITEBOARD FRAME ================== */
+.doodle-stage {
+  position: relative;
+  width: 90vw;
+  max-width: 1100px;
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ಕೇಂದ್ರದ ಬಿಳಿಯ ಬೋರ್ಡ್ (ಇಮೇಜ್‌ನಲ್ಲಿ ಇರುವಂತೆಯೇ ಪಿಂಕ್ ಶ್ಯಾಡೋ ಹೊಂದಿದೆ) */
+.center-board {
+  position: relative;
+  background: #ffffff;
+  border: 5px solid var(--black-ink);
+  border-radius: 20px;
+  width: 80%;
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* ಆ ನೈಜ ಗಟ್ಟಿ ಸ್ಕೆಚ್ ಶ್ಯಾಡೋ (Drawn Offset Shadow) */
+  box-shadow: 15px 15px 0px var(--pink-pastel);
+  z-index: 10;
+  text-align: center;
+}
+/* Title Stylings inside Board */
+.ch-title { font-size: clamp(35px, 6vw, 70px); font-weight: 900; color: var(--black-ink); line-height: 1.3;}
+.sub-txt { color: var(--black-ink); font-size: 22px; font-weight: 700; margin-top: 15px; letter-spacing: 2px;}
+
+/* ================== ಅನಿಮೇಷನ್ ಲಾಜಿಕ್ (Floating & Bubbling) ================== */
+@keyframes float { 0%, 100%{transform: translateY(0px) rotate(0deg);} 50%{transform: translateY(-15px) rotate(3deg);} }
+@keyframes floatRev { 0%, 100%{transform: translateY(0px) rotate(0deg);} 50%{transform: translateY(15px) rotate(-4deg);} }
+@keyframes rotateSlow { from{transform: rotate(0deg);} to{transform: rotate(360deg);} }
+@keyframes bubbleRise { 0%{opacity:0; transform: translateY(20px) scale(0.5);} 20%{opacity:1;} 100%{opacity:0; transform: translateY(-80px) scale(1.5);} }
+
+/* ================== THE DOODLE DECORATIONS (Beakers & Atoms wrapper) ================== */
+.decor-items { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+.floating-svg { position: absolute; filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.8)); }
+
+/* --- 1. ಟಾಪ್-ಲೆಫ್ಟ್: ಕಾನಿಕಲ್ ಫ್ಲಾಸ್ಕ್ (ಪಿಂಕ್ ದ್ರಾವಣ) --- */
+.pos-tl { top: -20px; left: -10px; width: 140px; animation: float 6s ease-in-out infinite; }
+
+/* --- 2. ಟಾಪ್-ಸೆಂಟರ್: ತಿರುಗುವ ಅಟಾಮ್-ವೃತ್ತ --- */
+.pos-tc { top: -50px; left: 45%; transform: translateX(-50%); width: 150px; animation: floatRev 5s ease-in-out infinite; }
+.pos-tc .spinner { animation: rotateSlow 8s linear infinite; transform-origin: center;}
+
+/* --- 3. ಟಾಪ್-ರೈಟ್: ಗೈರು ಅಳತೆಯ ಪಾತ್ರೆ & ಲೈಟ್ --- */
+.pos-tr { top: 0px; right: -20px; width: 110px; animation: float 5.5s ease-in-out infinite; }
+
+/* --- 4. ಬಾಟಮ್-ಲೆಫ್ಟ್: ಗುಂಡಗಿನ ತಳದ ನೀಲಿ-ಬೀಕರ್ --- */
+.pos-bl { bottom: -40px; left: -5px; width: 180px; animation: floatRev 6s ease-in-out infinite; z-index:25;}
+
+/* --- 5. ಬಾಟಮ್-ರೈಟ್: ಟೆಸ್ಟ್ ಟ್ಯೂಬ್ & ಪಿಂಕ್ ಮಾಲಿಕ್ಯೂಲ್ (Pink Molecules Structure) --- */
+.pos-br { bottom: -30px; right: -20px; width: 220px; animation: float 7s ease-in-out infinite; }
+
+/* --- 6. ಚಿಕ್ಕ-ಚಿಕ್ಕ ಅಣುಗಳ ಆಕಾರಗಳು & ಬಿಳಿ ಬಬಲ್ಸ್ ಸುತ್ತಮುತ್ತ (Tiny star scribbles) --- */
+.scribble { position: absolute; border: 3px solid var(--black-ink); background: #fff; border-radius: 50%; display:inline-block; }
+
+/* The Tiny Liquid Bubbles rising up Engine */
+.bub-container { position: absolute; top: -50px; left: 50%; width: 50px; height: 100px; transform: translateX(-50%); }
+.cbubble { position: absolute; width: 12px; height: 12px; border: 2px solid var(--black-ink); border-radius: 50%; background: #fff; bottom: 0; left: 20%; animation: bubbleRise 2s ease-in infinite;}
+.cb2 { width: 8px; height: 8px; left: 60%; animation-delay: 0.5s; animation-duration: 2.5s;}
+.cb3 { width: 10px; height: 10px; left: 40%; animation-delay: 1.2s; animation-duration: 1.8s;}
+</style>
+</head>
+<body>
+
+<div class="doodle-stage">
+
+   <!-- ================= MAIN CENTER BOARD ================= -->
+   <div class="center-board">
+       <div style="font-size:35px; color:#555; filter:grayscale(1); margin-bottom:-10px;">🧪✨</div>
+       <div class="ch-title">ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು <br>ಮತ್ತು ಸಮೀಕರಣಗಳು</div>
+       
+       <!-- Inner border mimicking an internal sticky note frame-->
+       <a href="MindMap.html" style="text-decoration:none;">
+           <div style="border: 3px dashed #1a1a1a; padding:15px 35px; border-radius: 50px; margin-top:20px; background:var(--yellow-pastel); box-shadow: 4px 4px 0 var(--pink-pastel); transition:0.3s; cursor:pointer;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+               <span style="font-family:'Nunito'; font-weight:900; color:#1a1a1a; font-size:18px;">ಸೈನ್ಸ್ ಇಂಟರಾಕ್ಟಿವ್ ವಿಶುಯಲ್ (ಮೈಂಡ್-ಮ್ಯಾಪ್) ➜ </span>
+           </div>
+       </a>
+       
+       <!-- Dots inside the board corners (Screws illustration) -->
+       <div class="scribble" style="width:12px; height:12px; top:15px; left:15px;"></div>
+       <div class="scribble" style="width:12px; height:12px; top:15px; right:15px;"></div>
+       <div class="scribble" style="width:12px; height:12px; bottom:15px; left:15px; background:var(--pink-pastel)"></div>
+       <div class="scribble" style="width:12px; height:12px; bottom:15px; right:15px; background:var(--pink-pastel)"></div>
+   </div>
+
+
+   <!-- ================= 3D DOODLE DECORATIONS PLACED ROUNDLY (Hand coded SVG lines natively mapping exactly) ================= -->
+   <div class="decor-items">
+       
+       <!-- TOP LEFT : Conical Flask -->
+       <div class="floating-svg pos-tl">
+          <!-- pure html/svg hand drawn conical shape mapping directly without img src tags! -->
+          <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+              <path d="M40,5 L60,5 L60,40 L90,105 A10,10 0 0 1 80,115 L20,115 A10,10 0 0 1 10,105 L40,40 Z" fill="#ffffff" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round"/>
+              <!-- Liquid level (Pink) -->
+              <path d="M28,80 L72,80 L88,112 A7,7 0 0 1 80,115 L20,115 A7,7 0 0 1 12,112 Z" fill="#ff99d6" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+              <circle cx="50" cy="95" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+              <circle cx="40" cy="105" r="3" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+              <!-- Measure lines -->
+              <line x1="30" y1="85" x2="38" y2="85" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+              <line x1="26" y1="95" x2="34" y2="95" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div class="bub-container"> <div class="cbubble"></div><div class="cbubble cb2"></div><div class="cbubble cb3"></div> </div>
+       </div>
+
+
+       <!-- TOP CENTER : Revolving ATOM Core Model! -->
+       <div class="floating-svg pos-tc">
+          <svg viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" class="spinner">
+              <!-- Orbit lines drawing natively -->
+              <ellipse cx="75" cy="75" rx="20" ry="70" fill="none" stroke="#1a1a1a" stroke-width="4" transform="rotate(30 75 75)" />
+              <ellipse cx="75" cy="75" rx="20" ry="70" fill="none" stroke="#1a1a1a" stroke-width="4" transform="rotate(-30 75 75)" />
+              <ellipse cx="75" cy="75" rx="20" ry="70" fill="none" stroke="#1a1a1a" stroke-width="4" transform="rotate(90 75 75)" />
+              <!-- Nucleus central bubble mapping directly from original doodle -->
+              <circle cx="75" cy="75" r="14" fill="#99e6ff" stroke="#1a1a1a" stroke-width="4"/>
+              
+              <!-- Orbital Electrons mapped beautifully natively!-->
+              <circle cx="110" cy="30" r="8" fill="#fff" stroke="#1a1a1a" stroke-width="4"/>
+              <circle cx="20" cy="90" r="8" fill="#ff99d6" stroke="#1a1a1a" stroke-width="4"/>
+              <circle cx="130" cy="100" r="8" fill="#fff" stroke="#1a1a1a" stroke-width="4"/>
+          </svg>
+       </div>
+
+       
+       <!-- TOP RIGHT : Abstract Elements -> Glowing bulb or mini flask + squiggles! -->
+       <div class="floating-svg pos-tr">
+          <svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+              <path d="M45,30 Q30,-10 65,10 Q80,-5 80,20 Q100,20 80,45 Q110,65 75,70 Q95,110 50,85 Q20,110 35,70 Q-10,50 30,45 Q0,10 45,30 Z" fill="#99e6ff" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round"/>
+              <circle cx="50" cy="45" r="5" fill="#1a1a1a" /> <circle cx="65" cy="45" r="5" fill="#1a1a1a" />
+              <path d="M45,55 Q57,65 70,55" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+       </div>
+
+
+       <!-- BOTTOM LEFT : Round bottom boiling flask. Beautiful reproduction Native vector mappings-->
+       <div class="floating-svg pos-bl">
+          <svg viewBox="0 0 150 180" xmlns="http://www.w3.org/2000/svg">
+              <path d="M55,10 L95,10 L95,65 A50,50 0 1,1 55,65 Z" fill="#ffffff" stroke="#1a1a1a" stroke-width="4.5" stroke-linejoin="round"/>
+              <path d="M36,95 A50,50 0 0,0 120,95 A40,40 0 0,1 36,95 Z" fill="#99e6ff" stroke="#1a1a1a" stroke-width="3"/>
+              <!-- Cute dots on liquid native visual -->
+              <circle cx="55" cy="115" r="6" fill="#fff" stroke="#1a1a1a" stroke-width="3"/>
+              <circle cx="75" cy="135" r="4" fill="#fff" stroke="#1a1a1a" stroke-width="3"/>
+              <circle cx="95" cy="110" r="8" fill="#fff" stroke="#1a1a1a" stroke-width="3"/>
+              <line x1="80" y1="40" x2="90" y2="40" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/>
+              <line x1="80" y1="55" x2="88" y2="55" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+       </div>
+
+
+       <!-- BOTTOM RIGHT : Mega Pink Structure Atoms network intersecting correctly to mirror uploaded snapshot.-->
+       <div class="floating-svg pos-br">
+           <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- Network bonds mapped -->
+              <line x1="100" y1="50" x2="40" y2="120" stroke="#1a1a1a" stroke-width="5" />
+              <line x1="100" y1="50" x2="160" y2="110" stroke="#1a1a1a" stroke-width="5" />
+              <line x1="40" y1="120" x2="110" y2="180" stroke="#1a1a1a" stroke-width="5" />
+              
+              <!-- Giant Pink Orbs! mimicking the doodle nodes exactly matching reference -->
+              <circle cx="100" cy="50" r="28" fill="#ff99d6" stroke="#1a1a1a" stroke-width="5"/>
+              <circle cx="40" cy="120" r="25" fill="#fff" stroke="#1a1a1a" stroke-width="5"/>
+              <circle cx="160" cy="110" r="22" fill="#fff099" stroke="#1a1a1a" stroke-width="5"/>
+              <circle cx="110" cy="180" r="28" fill="#ff99d6" stroke="#1a1a1a" stroke-width="5"/>
+              
+              <!-- Inner rings representing highlight scribbles locally inside svg logic safely!-->
+              <ellipse cx="92" cy="45" rx="8" ry="12" fill="none" stroke="#1a1a1a" stroke-width="3" transform="rotate(-30 92 45)"/>
+              <ellipse cx="103" cy="173" rx="8" ry="10" fill="none" stroke="#1a1a1a" stroke-width="3" transform="rotate(-15 103 173)"/>
+              <circle cx="34" cy="116" r="4" fill="#1a1a1a"/>
+              <circle cx="155" cy="106" r="3" fill="#1a1a1a"/>
+           </svg>
+       </div>
+
+       
+       <!-- Stray standalone floating bubbles/asterisks mirroring the empty spaces fillers requested context natively mapped to frame structure explicitly! -->
+       <svg style="position:absolute; right:15%; top: 15%; width:50px; animation:floatRev 4s infinite;" viewBox="0 0 50 50"><line x1="25" y1="5" x2="25" y2="45" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/><line x1="5" y1="25" x2="45" y2="25" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/><line x1="12" y1="12" x2="38" y2="38" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/><line x1="12" y1="38" x2="38" y2="12" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/></svg>
+
+       <div class="scribble" style="width:20px; height:20px; bottom: 30%; left: 8%; background:var(--blue-pastel); animation: float 3s infinite;"></div>
+       <div class="scribble" style="width:15px; height:15px; top: 30%; left: 10%; background:var(--yellow-pastel); animation: floatRev 2s infinite;"></div>
+       <div class="scribble" style="width:25px; height:25px; bottom: 20%; right: 10%; background:none; border: 4px dashed var(--black-ink); animation: rotateSlow 6s infinite;"></div>
+
+   </div> <!-- Ends decors items setup -->
+
+</div>
+
+</body>
+</html>

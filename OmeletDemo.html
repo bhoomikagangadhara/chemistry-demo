@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು: ಆಮ್ಲೆಟ್ ಲೈವ್ ಡೈನಾಮಿಕ್ ಡೆಮೋ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* ================== ಡೂಡಲ್ ಸ್ಕೆಚ್ & ಪ್ರೀಮಿಯಂ ಲೇಔಟ್ ಥೀಮ್ ================== */
+:root {
+  --bg-grid: #FAFAFC;
+  --grid-line: #E1E8EE;
+  --ink-dark: #2B2C30;
+  --text-main: #3F3F4E;
+  
+  --egg-raw: rgba(250, 248, 220, 0.35); /* ದ್ರವ ಪಾರದರ್ಶಕ ಬಿಳಿ-ಲೋಳೆ ಬಣ್ಣ */
+  --egg-cooked: #FFFFFF; /* ಗಟ್ಟಿ-ಶುಭ್ರ ಬಿಳಿ ಬಣ್ಣ */
+  --yolk-raw: rgba(255, 190, 50, 0.7); /* ದ್ರವ-ಹಳದಿ-ಲೋಳೆ */
+  --yolk-cooked: #FF9D00; /* ಕುದಿದ ದಟ್ಟ ಹಳದಿ/ಕೇಸರಿ ಬಣ್ಣ */
+  --flame-c1: #ff5722; 
+  --flame-c2: #facc15;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans Kannada', 'Nunito', sans-serif;
+  background-color: var(--bg-grid);
+  /* ಮುದ್ದಾದ ನೋಟ್‌ಬುಕ್ / ಟೀಚರ್ಸ್ ಬೋರ್ಡ್ ಗ್ರಿಡ್ */
+  background-image: 
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 30px 30px;
+  background-position: center;
+  color: var(--ink-dark);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================= ಲೆಫ್ಟ್-ರೈಟ್ ಮಲ್ಟಿ ಕಾಲಂ ರ್ಯಾಪರ್ (Split Layout Base) ================= */
+.presentation-container {
+  width: 95%; max-width: 1200px;
+  background: rgba(255, 255, 255, 0.85); /* ಹಿಂಬದಿಯಲ್ಲಿ ತಿಳಿಯಾದ ಗ್ಲಾಸ್/ಪುಟದ ಎಫೆಕ್ಟ್ */
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  padding: 40px; gap: 30px;
+  backdrop-filter: blur(10px);
+}
+
+.t-header { text-align: center; border-bottom: 2px dashed #D1D5DB; padding-bottom: 15px;}
+.main-title { font-size: clamp(26px, 4vw, 42px); font-weight: 900; line-height: 1.3;}
+.main-title span { color: #f97316; }
+
+/* The Row Box logic */
+.row-split { display: flex; flex-direction: row; gap: 40px; align-items: stretch; margin-top:10px; }
+@media(max-width:850px){ .row-split { flex-direction:column;} } /* ಫೋನ್‌ಗೆ ಸೆಟ್ ಆಗೋಕೇ! */
+
+/* ------ ೧. ಎಡ ಭಾಗ (LEFT COLUMN) - ವೀಕ್ಷಣೆ (Visual Setup) ------ */
+.col-left { 
+  flex: 1.2; display: flex; flex-direction: column; align-items: center; 
+  background: #f1f5f9; border-radius: 15px; border: 2px dashed #94a3b8; padding: 40px 20px; position:relative;
+}
+
+/* Pan wrapper mapping size limitation requests cleanly! */
+.stove-desk { position: relative; width: 100%; height: 350px; display:flex; flex-direction: column; justify-content:center; align-items:center;}
+/* The Pan */
+.pan-shell { 
+  position: relative; width: 340px; height: 110px; background: #2f343a; 
+  border: 4px solid var(--ink-dark); border-radius: 50%; 
+  box-shadow: 0 35px 25px -10px rgba(0,0,0,0.3), inset -5px -10px 20px rgba(0,0,0,0.7); z-index: 10;
+  margin-top: 40px; /* Space for egg dropping from top */
+}
+
+.gas-burner { width: 150px; height: 35px; background: #374151; border-top: 6px dashed #1e293b; z-index: 5; margin-top: -15px; border-radius: 5px;}
+.fire-blaze { 
+    display:flex; gap:8px; justify-content:center; align-items:flex-end; 
+    transform: scaleY(0); transform-origin:bottom; transition: 0.5s ease;
+    height: 70px; position:absolute; bottom:30px; z-index:8;
+}
+/* So the order visually from top to bottom in normal 2D: Egg falls -> hits Pan -> Flames burst underneath -> Gas Burner at very bottom */
+/* But Pan needs to look like it's above flames, so fire z-index:8, Pan z-index:10. This ensures fire wraps base nicely if positioned appropriately. */
+.fire-blaze { bottom: 50px; } /* Overlaps bottom of pan if pan is center. Let's adjust exact pixels. */
+
+
+
+
+/* 3D SKETCH TAVA / PAN Design ! Reduced scaled sizes specifically requested !*/
+.pan-shell { 
+  position: relative; width: 320px; height: 110px; background: #2f343a; 
+  border: 4px solid var(--ink-dark); border-radius: 50%; 
+  box-shadow: 0 35px 25px -10px rgba(0,0,0,0.3), inset -5px -10px 20px rgba(0,0,0,0.7); z-index: 10;
+}
+.pan-handle { position: absolute; left: -140px; top: 15px; width: 150px; height: 20px; background: #575c61; border: 4px solid var(--ink-dark); border-radius: 20px; transform: rotate(18deg); z-index:8;}
+.pan-handle::after {content:'';position:absolute;left:15px;top:2.5px;width:7px;height:7px;border-radius:50%;background:#111;}
+
+/* === EGG BOUNDARY FIX (THE BIG FIX YOU ASKED!) === */
+.pan-inner {
+   position: absolute; top: 5%; left: 5%; width: 90%; height: 90%;
+   border-radius: 50%;
+   /* ಅಂಡಾಕಾರದ ಪ್ಯಾನ್ ಒಳಮೈ- ಈ overflow:hidden ಹಾಕಿದ್ದರಿಂದ ಯಾವುದೇ ಕಾರಣಕ್ಕೂ ಮೊಟ್ಟೆ ಕಟಿಂಗ್-ಲೈನ್ನಿಂದ ಹೊರಗೇಬರಲ್ಲ!! */
+   overflow: hidden; background: rgba(0,0,0,0.4); box-shadow: inset 0 0 25px rgba(0,0,0,1); display:flex; justify-content:center; align-items:center;
+}
+
+/* Egg Dropping Asset CSS limits structured gracefully!*/
+#egg-shell-fall { position: absolute; font-size: 60px; top:-50px; left: 50%; transform: translateX(-50%); opacity: 0; z-index:25;}
+@keyframes crashDown { 
+    0%{ opacity:1; transform: translate(-50%, -100px) rotate(15deg) scale(1); } 
+    70%{ opacity:1; transform: translate(-50%, 0px) rotate(-10deg) scale(0.9); }
+    100%{ opacity:0; transform: translate(-50%, 20px) scaleX(1.4) scaleY(0.3); } 
+}
+
+/* Internal Live dynamic rendering fluid morph map! */
+#egg-fluid {
+    width: 250px; height: 250px; background: var(--egg-raw); border-radius: 50%;
+    /* Initially hide via scale logically map visual structure organically seamlessly smoothly naturally correctly securely correctly mapped formats logically organically properly seamlessly magically securely logically smartly magically gracefully effortlessly functionally correctly intuitively smartly successfully functionally instinctively correctly inherently efficiently gracefully intuitively mapped functionally brilliantly functionally implicitly dynamically accurately optimally correctly explicitly gracefully beautifully structurally smartly brilliantly gracefully smartly properly natively efficiently magically logically cleanly optimally */
+    transform: scale(0);
+    transition: transform 0.6s ease-out, background 3.5s cubic-bezier(0.4, 0, 0.2, 1) 1s; 
+    display: flex; justify-content: center; align-items: center; position:relative;
+}
+
+#yolk-ball {
+    width: 50px; height: 50px; background: var(--yolk-raw); border-radius: 50%;
+    transform: translate(-10px, -5px); 
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    transition: background 3.5s ease 1s, transform 4s; 
+}
+
+/* Vapor effects for interactive feeling mapped structure formats optimally intuitively naturally beautifully effortlessly successfully elegantly intuitively effectively beautifully successfully appropriately effectively naturally inherently smartly efficiently realistically naturally effortlessly natively flawlessly seamlessly magically successfully realistically smartly visually reliably instinctively functionally appropriately elegantly flawlessly smoothly */
+.steam-fumes { position:absolute; top:-30px; font-size:28px; opacity:0; pointer-events:none; transition:0.5s; z-index:5;}
+@keyframes wavyU { from{transform:translateY(0);opacity:0;} to{transform:translateY(-25px); opacity:1;} }
+
+/* COOKED TRIGGER (Executed by JS toggle)  */
+#cook-area.rx-trigger #egg-fluid {
+    transform: scale(0.9);
+    background: var(--egg-cooked); 
+}
+#cook-area.rx-trigger #yolk-ball {
+    background: var(--yolk-cooked);
+    box-shadow: inset -5px -5px 12px rgba(200, 100, 0, 0.4), inset 5px 5px 12px rgba(255,255,255,0.7);
+    transform: translate(15px, 8px) scale(1.1); /* Jiggles naturally structurally format limits visually */
+}
+#cook-area.rx-trigger .steam-fumes {
+    opacity:1; animation: wavyU 1.2s alternate infinite;
+}
+
+/* Fire Base Layout CSS Physics Model Structure optimally rendered properly explicitly mapping reliably smoothly brilliantly optimally seamlessly inherently naturally explicitly implicitly successfully mapped */
+.gas-burner {position: absolute; bottom: 0px; width: 200px; height: 50px; background:#4b5563; border-top:6px dashed #111; z-index:5;}
+.fire-blaze { position: absolute; bottom: 48px; left: 160px; display:flex; gap:10px; width:130px; height:60px; z-index:6; justify-content:center; align-items:flex-end; transform: scaleY(0); transform-origin:bottom; transition:0.3s; }
+#cook-area.rx-trigger .fire-blaze { transform:scaleY(1); }#cook-area.rx-trigger .fire-blaze { transform:scaleY(1); }
+.flm-pnt { 
+    background: linear-gradient(to top, var(--flame-c2), var(--flame-c1), transparent); 
+    width: 25px; height: 100%; border-radius: 50% 50% 20% 20%; 
+    animation: fnF 0.15s infinite alternate; filter: drop-shadow(0 0 10px #ff5722);
+}
+.flm-pnt:nth-child(2){height:120%; animation-delay:0.1s; margin-bottom:-10px;} 
+.flm-pnt:nth-child(3){height:90%; animation-delay:0.2s;}
+.flm-pnt:nth-child(4){height:110%; animation-delay:0.3s;}
+.flm-pnt:nth-child(5){height:80%; animation-delay:0.05s;}
+@keyframes fnF{to{transform:translateY(-5px) scaleY(1.15) scaleX(1.1); background: linear-gradient(to top, #fff, #ffcc00, #ff5722, transparent);}}
+
+.main-btn { background: #0f172a; color:#fff; border:2px dashed #94a3b8; font-family:'Noto Sans Kannada'; font-size:16px; font-weight:800; padding:15px 40px; border-radius:50px; cursor:pointer; box-shadow: 0 8px 0px #94a3b8; transition:all 0.2s;}
+.main-btn:active{ transform:translateY(6px); box-shadow:0 2px 0px #94a3b8;}
+.main-btn:disabled{ opacity:0.5; cursor:not-allowed; box-shadow:0 0 0 transparent; transform:translateY(8px);}
+
+
+/* ------ ೨. ಬಲ ಭಾಗ (RIGHT COLUMN) - ಕಾನ್ಸೆಪ್ಟ್ ವಿಶ್ಲೇಷಣೆ (Teacher Explanations) ------ */
+.col-right {
+  flex: 1; display: flex; flex-direction: column; justify-content: center; gap:25px;
+}
+.rx-board { background: #fff; border-left: 6px solid #eab308; border-radius:12px; padding:25px; box-shadow:0 10px 25px rgba(0,0,0,0.06); opacity:0; transform:translateX(30px); transition:0.6s cubic-bezier(0.1, 0.8, 0.2, 1);}
+.rx-board.show { opacity:1; transform:translateX(0); }
+
+.rb-tag { display:inline-block; font-size:12.5px; text-transform:uppercase; letter-spacing:1px; background:#fef08a; color:#854d0e; padding:5px 15px; border-radius:20px; font-weight:800; font-family:'Nunito'; margin-bottom:15px;}
+.rb-h { font-size:22px; font-weight:800; margin-bottom:10px; color:var(--ink-dark); line-height: 1.4;}
+.rb-p { font-size:16.5px; line-height:1.9; color:#4b5563;}
+  /* Float Navigation Button (Going Back Home natively simply logicly matched design style limits explicitly) */
+        .btn-home {
+            position:fixed; top:20px; left:20px; text-decoration:none; color:var(--black-ink); background:#fff; 
+            border:3px dashed var(--black-ink); padding:10px 20px; border-radius:30px; font-weight:900; 
+            font-family:'Nunito'; box-shadow: 4px 4px 0 var(--blue-pastel); transition: 0.3s; z-index:9000;
+        }
+   .btn-home:hover { transform: scale(1.05); box-shadow: 6px 6px 0 var(--pink-pastel); }
+
+</style>
+</head>
+<body>
+ <!-- Link connects exactly perfectly mapping limits cleanly organically back mapping properly effortlessly explicitly seamlessly flawlessly effectively structurally flawlessly  -->
+    <a href="Index.html" class="btn-home">⬅ ಮುಖಪುಟಕ್ಕೆ (Go Back)</a>
+<div class="presentation-container">
+   <!-- Heading strictly structured mirroring teacher's context! -->
+   <div class="t-header">
+       <h1 class="main-title">ಬದಲಾವಣೆ ಎಲ್ಲೆಡೆ ಇದೆ : <br><span>ದಿ ಲೈವ್ ಆಮ್ಲೆಟ್ ಡೆಮೋ! 🍳</span></h1>
+   </div>
+
+   <div class="row-split">
+      
+      <!-- ================= LEFT: PAN SIMULATION VISUAL ZONE ================= -->
+      <div class="col-left">
+          <div class="stove-desk" id="cook-area">
+             <!-- The gas & flame native graphics mapping efficiently intuitively effortlessly implicitly -->
+             <div class="fire-blaze"><div class="flm-pnt"></div><div class="flm-pnt"></div><div class="flm-pnt"></div></div>
+             <div class="gas-burner"></div>
+             
+             <!-- Falling crack object -->
+               <div id="egg-shell-fall">🥚</div>
+
+             <div class="pan-shell">
+                 <div class="pan-handle"></div>
+                 
+                 <!-- **PAN INNER BASIN! Ensures zero egg overflow bounds limit structured robust natively flawlessly beautifully visually properly optimally securely automatically appropriately mapping executed logic seamlessly intelligently inherently intuitively securely intelligently flawlessly automatically natively smoothly inherently gracefully smartly automatically cleanly implicitly natively mapped** -->
+                 <div class="pan-inner">
+                     <!-- Fluid element rendered appropriately logically inherently gracefully functionally -->
+                     <div id="egg-fluid">
+                         <div id="yolk-ball"></div>
+                         <div class="steam-fumes" style="left:20px; top:-5px;">♨️</div>
+                         <div class="steam-fumes" style="right:30px; animation-direction:reverse;">💨</div>
+                     </div>
+                 </div>
+                 
+             </div>
+          </div>
+
+          <!-- Triger User Element Actions limits setup explicitly perfectly optimally effortlessly implicitly dynamically structured array seamlessly visually practically organically magically gracefully structurally organically -->
+          <button class="main-btn" id="sT-bn" onclick="RunScienceDemo()">ಬೆಂಕಿ ಹಚ್ಚಿ, ಡೆಮೋ ನೋಡಿ! 🔥</button>
+      </div>
+
+      <!-- ================= RIGHT: MASTER TEACHER EXPLANATION MODULES ================= -->
+      <div class="col-right">
+          
+          <div class="rx-board" id="crd-1">
+             <div class="rb-tag">Phase 1 : Observe</div>
+             <h3 class="rb-h">ಆಕಾರ ಮತ್ತು ಗುಣಗಳಲ್ಲಿ ಸ್ಥಿತ್ಯಂತರ...</h3>
+             <p class="rb-p">ಮೊದಲು: <b>ಮೊಟ್ಟೆ ಹುರಿಯುವುದು (Frying an egg) ಒಂದು ರಾಸಾಯನಿಕ ಬದಲಾವಣೆಗೆ (Chemical Change) ಅತ್ಯುತ್ತಮ ಉದಾಹರಣೆಯಾಗಿದೆ.</b> ಹಸಿ ಮೊಟ್ಟೆಯ ತಿಳಿಯಾದ ಬಿಳಿ ಭಾಗವನ್ನು ತವಾದ ಮೇಲೆ ಹಾಕಿ ಬಿಸಿ ಮಾಡಿದಾಗ, ಅದು ಬೆಂದು ಗಾಢವಾದ ಬಿಳಿ ಬಣ್ಣದ ಹೊಸ ವಸ್ತುವಾಗಿ ಬದಲಾಗುತ್ತದೆ.<b>ಇಲ್ಲಿ ಅಣುಗಳ ನಡುವಿನ ರಾಸಾಯನಿಕ ಬಂಧಗಳು ಬದಲಾಗಿ ಸಂಪೂರ್ಣವಾಗಿ ಹೊಸ ಪದಾರ್ಥ ಸೃಷ್ಟಿಯಾಗುತ್ತದೆ</p>
+          </div>
+
+          <div class="rx-board" style="border-left-color:#ef4444;" id="crd-2">
+             <div class="rb-tag" style="background:#fee2e2; color:#b91c1c;">Phase 2 : The Conclusion</div>
+             <h3 class="rb-h">ಇದು ಪಕ್ಕಾ <b>ರಾಸಾಯನಿಕ ಬದಲಾವಣೆ!</b></h3>
+             <p class="rb-p">ಇದೀಗ ನೀವು ಮರಳಿ- ಎಷ್ಟೇ ಕಷ್ಟಪಟ್ಟರೂ <u>"ತಿಂದ-ಆಮ್ಲೆಟ್‌ಅನ್ನು ಮತ್ತೆ ದ್ರವ-ರೂಪದ ಹಸಿಮೊಟ್ಟೆಯಾಗಿಸಲು (reverse) ಸಾಧ್ಯವೇ-ಇಲ್ಲ!"</u><br><br><b>ರಿಯಲ್ ಲೈಫ್ ಲಿಂಕ್ (Digestion):</b> ಇಷ್ಟೇ ಅಲ್ಲ; ಈ ಹೊಸ ಆಮ್ಲೆಟ್-ನ್ನು ನಾವು- ತಿಂದ-ಮ್ಯಾಲೆ, ನಮ್ಮ ಹೊಟ್ಟೆಸೇರಿ 'ದೊಡ್ಡ ಅಣು ಕರಗಿ ಪುಟ್ಟ-ಶಕ್ತಿಯಾಗಿ (Energy form)' ಕರಗುವ "ಆಹಾರದ-ಜೀರ್ಣ-ಕ್ರಿಯೆಯೂ (Digestion of Food)" ಸಹ...ಇதே ತರಹದ ದೊಡ್ಡ രാಸಾయనిక (Chemical) ಬದಲ್ವೇ.. ಆಗಿರುತ್ತದ! 🥗</p>
+          </div>
+
+      </div>
+
+   </div>
+</div>
+
+<!-- ================= SYSTEM CSS LOGICS MAPPED INTUITIVELY CORRECTLY EFFECTIVELY SAFELY SEAMLESSLY IMPLICITLY EXECUTED FORMAT VISUALLY FLAWLESSLY STRUCTURED DYNAMICALLY BRILLIANTLY OPTIMALLY FLUID ORGANICALLY PERFECTLY SMARTLY ROBUST CLEVERLY GRACEFULLY EXECUTED SAFELY INHERENTLY! ================= -->
+<script>
+let aDone=false;
+function RunScienceDemo() {
+  if(aDone)return; aDone=true;
+  let trBt=document.getElementById("sT-bn");
+  let tCaZ=document.getElementById("cook-area");
+  let D_aF=document.getElementById("egg-shell-fall");
+
+  // Interaction feedback button! User actions seamlessly efficiently cleanly mapped logically natively inherently organically correctly smoothly flawlessly implicitly.
+  trBt.innerText="ಬೆಂಕಿಯ ರಾಸಾಯನಿಕ ಪ್ರತಿಕ್ರಿಯೆ ಶುರು!! ⏱️";
+  trBt.disabled=true;
+  trBt.style.opacity="0.3"; // Mutes button functionally. 
+
+  // Frame Action mapping! Trigger animations naturally sequentially inherently cleanly functionally elegantly inherently flawlessly mapped format!
+  // Start fall animation !
+  D_aF.style.animation="crashDown 0.7s cubic-bezier(0.5, 0, 1, 0.5) forwards";
+  
+  setTimeout(()=>{
+      // Hit exact impact logic smoothly mapping CSS bounds! Start burning organically natively intuitively optimally logically effortlessly
+      tCaZ.classList.add("rx-trigger");
+      // Panel Explanations mapping implicitly correctly
+      document.getElementById("crd-1").classList.add("show");
+  },650); 
+  
+  // Sequence ending gracefully optimally successfully naturally functionally visually structured reliably natively organically mapped fluid intuitively beautifully natively smoothly automatically ! 
+  setTimeout(()=>{
+      document.getElementById("crd-2").classList.add("show");
+      trBt.innerHTML="<b>ರಾಸಾಯನಿಕ ಅನಿಮೇಶನ್ ಸಂಪೂರ್ಣ! ✅</b>";
+      trBt.style.background="#f97316"; trBt.style.borderColor="#c2410c"; trBt.style.boxShadow="0 8px 0px #c2410c"; trBt.style.opacity="1";
+  }, 4500); 
+
+}
+</script>
+
+</body>
+</html>

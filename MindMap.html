@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Doodle Mind Map - ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ================= Base & Sketch-Doodle Variables ================= */
+        :root {
+            /* Notebook/Sketchboard background elements matched exactly */
+            --bg-grid: #f5fcff;
+            --black-ink: #1a1a1a;
+            
+            /* Core Theme node palettes linked mapping page-1 styles */
+            --lvl-1-bg: #ff99d6;   /* Pink */
+            --lvl-2-bg: #99e6ff;   /* Blue Pastel */
+            --lvl-3-bg: #fff099;   /* Yellow */
+            --leaf-bg:  #ffffff;   /* Simple clear white element leaves */
+        }
+
+        body {
+            font-family: 'Noto Sans Kannada', 'Nunito', sans-serif;
+            background-color: var(--bg-grid);
+            color: var(--black-ink);
+            margin: 0; padding: 50px 80px; 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            /* Sync: Sketchbook grid line paper background mapped uniformly */
+            background-image: 
+                linear-gradient(rgba(153, 230, 255, 0.4) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(153, 230, 255, 0.4) 2px, transparent 2px);
+            background-size: 50px 50px;
+        }
+
+        /* Float Navigation Button (Going Back Home natively simply logicly matched design style limits explicitly) */
+        .btn-home {
+            position:fixed; top:20px; left:20px; text-decoration:none; color:var(--black-ink); background:#fff; 
+            border:3px dashed var(--black-ink); padding:10px 20px; border-radius:30px; font-weight:900; 
+            font-family:'Nunito'; box-shadow: 4px 4px 0 var(--blue-pastel); transition: 0.3s; z-index:9000;
+        }
+        .btn-home:hover { transform: scale(1.05); box-shadow: 6px 6px 0 var(--pink-pastel); }
+
+
+        .mindmap-wrapper {
+            width: 100%; height: 100%; display: flex; align-items: center; overflow-x: auto; position:relative;
+        }
+
+        /* ---------------- HORIZONTAL SKETCH TREE CSS ---------------- */
+        ul {
+            list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; justify-content: center;
+            gap: 15px; position: relative; padding-left: 30px; 
+        }
+
+        .tree-root { padding-left: 0; flex-direction: row; align-items: center;}
+        .branch { display: flex; flex-direction: row; align-items: center; position: relative; }
+
+        /* Hand-drawn style hard connectors lines defined precisely via box shapes! */
+        ul:not(.tree-root)::before {
+            content: ''; position: absolute; left: 0; top: 25px; bottom: 25px; width: 4px; background: var(--black-ink);
+        }
+        .branch::before {
+            content: ''; position: absolute; left: -30px; top: 50%; width: 30px; height: 4px; background: var(--black-ink);
+        }
+
+        li { position: relative; }
+        
+        /* ------------- DOODLE STYLED CARD / BOX UX ----------- */
+        .node-container { display: flex; align-items: center; position: relative; z-index: 10; }
+
+        .node-box {
+            padding: 12px 25px;
+            /* Box shape tweaked making organically smooth friendly shapes with strong black border */
+            border-radius: 12px;
+            border: 3px solid var(--black-ink); 
+            font-size: 16px; font-weight: 700;
+            white-space: nowrap;
+            /* Giving The Real Comic offset outline boxshadow representation naturally implicitly configured visually successfully gracefully seamlessly */
+            box-shadow: 5px 5px 0px rgba(26,26,26,0.3);
+            transition: all 0.3s ease; color: var(--black-ink);
+            margin-right: 25px;
+        }
+        .node-box:hover {
+            box-shadow: 8px 8px 0px rgba(26,26,26,0.5); transform: translateY(-2px);
+        }
+
+        /* Cascading specific themes by array deepness levels safely naturally mapping colors logically  */
+        .tree-root > .branch > .node-container > .node-box {
+            background-color: var(--lvl-1-bg); font-size: 18px; font-weight: 900; letter-spacing:1px;
+        }
+        .level-2 .node-box { background-color: var(--lvl-2-bg); font-size:16.5px; }
+        .level-3 .node-box { background-color: var(--lvl-3-bg); }
+        .level-4 .node-box { background-color: var(--leaf-bg); border-left: 6px solid var(--lvl-1-bg); font-size: 15.5px;}
+
+        /* Doodle Node Interactivity Icon '+' '-' UI Setup matching sketch aesthetics completely intelligently appropriately functionally gracefully!  */
+        .toggle-btn {
+            background: #fff;
+            color: var(--black-ink);
+            width: 30px; height: 30px;
+            border-radius: 50%; border: 3px solid var(--black-ink);
+            box-shadow: 2px 3px 0 var(--black-ink);
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; margin-left: -12.5px; z-index: 12;
+            font-weight: 900; font-family:'Nunito'; font-size: 18px; transition: all 0.3s; user-select: none;
+        }
+        .toggle-btn:hover { background: var(--yellow-pastel); transform: scale(1.15) rotate(15deg); }
+
+        .children-list { transition: all 0.4s ease-out; transform-origin: left center; }
+        .hidden { display: none !important; opacity: 0; }
+        
+        .branch { animation: popIn 0.4s ease forwards; opacity: 0; }
+        @keyframes popIn {
+            from { transform: scaleX(0.5); opacity: 0; filter:blur(4px); }
+            to { transform: scaleX(1); opacity: 1; filter:blur(0);}
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Link connects exactly perfectly mapping limits cleanly organically back mapping properly effortlessly explicitly seamlessly flawlessly effectively structurally flawlessly  -->
+    <a href="Index.html" class="btn-home">⬅ ಮುಖಪುಟಕ್ಕೆ (Go Back)</a>
+
+    <div class="mindmap-wrapper">
+        <ul class="tree-root">
+            <li class="branch" style="opacity: 1; transform: scale(1);">
+                
+                <div class="node-container">
+                    <div class="node-box">ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಗಳು & ಸಮೀಕರಣಗಳು</div>
+                    <div class="toggle-btn" title="Open/Close">✕</div>
+                </div>
+
+                <ul class="children-list">
+                    <!-- Branch 1 -->
+                    <li class="branch level-2">
+                        <div class="node-container">
+                            <div class="node-box">ಬದಲಾವಣೆಯ ವಿಧಗಳು</div>
+                            <div class="toggle-btn">➔</div>
+                        </div>
+                        <ul class="children-list hidden">
+                            <li class="branch level-3">
+                                <div class="node-container">
+                                    <div class="node-box">ಭೌತಿಕ ಬದಲಾವಣೆ ❄️</div>
+                                    <div class="toggle-btn">➔</div>
+                                </div>
+                                <ul class="children-list hidden">
+                                    <li class="branch level-4"><div class="node-container"><div class="node-box">ಆಕಾರ ಮತ್ತು ಗಾತ್ರದಲ್ಲಿ ಬದಲಾವಣೆ</div></div></li>
+                                    <li class="branch level-4"><div class="node-container"><div class="node-box">ಹೊಸ ಪದಾರ್ಥ ಸೃಷ್ಟಿಯಾಗುವುದಿಲ್ಲ</div></div></li>
+                                   
+                                      <li class="branch level-4">
+    <div class="node-container">
+      <a href="HaircutDemo.html" style="text-decoration:none;">
+          <div class="node-box" style="background:#fef08a; border-color:#d97706; cursor:pointer; color:#000;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='8px 8px 0 rgba(217,119,6,0.4)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='4px 4px 0 rgba(26,26,26,0.3)';">
+             ಉದಾಹರಣೆ: ಉದಾ: ಕೂದಲು ಕತ್ತರಿಸುವುದು ✂️
+          </div>
+      </a>
+   </div>
+</li>
+
+
+
+                                </ul>
+                            </li>
+                            <li class="branch level-3">
+                                <div class="node-container">
+                                    <div class="node-box">ರಾಸಾಯನಿಕ ಬದಲಾವಣೆ 🔥</div>
+                                    <div class="toggle-btn">➔</div>
+                                </div>
+                                <ul class="children-list hidden">
+                                    <li class="branch level-4"><div class="node-container"><div class="node-box">ಸ್ವಭಾವದಲ್ಲಿಯೇ 100% ಬದಲಾವಣೆ</div></div></li>
+                                    <li class="branch level-4"><div class="node-container"><div class="node-box">ಪಕ್ಕಾ-ಹೊಸ ಪದಾರ್ಥಗಳ ರಚನೆ</div></div></li>
+                                   <li class="branch level-4">
+    <div class="node-container">
+      <a href="OmeletDemo.html" style="text-decoration:none;">
+          <div class="node-box" style="background:#fef08a; border-color:#d97706; cursor:pointer; color:#000;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='8px 8px 0 rgba(217,119,6,0.4)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='4px 4px 0 rgba(26,26,26,0.3)';">
+             ಉದಾಹರಣೆ:- ಮೊಟ್ಟೆ ಹುರಿಯುವುದು 🍳 ➜
+          </div>
+      </a>
+   </div>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Branch 2 -->
+                    <li class="branch level-2">
+                        <div class="node-container">
+                            <div class="node-box">ಗುಣಲಕ್ಷಣಗಳು (Indicators)</div>
+                            <div class="toggle-btn">➔</div>
+                        </div>
+                        <ul class="children-list hidden">
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಸ್ಥಿತಿಯಲ್ಲಿ ಬದಲಾವಣೆ 🧊💧</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಬಣ್ಣದಲ್ಲಿ ಬದಲಾವಣೆ 🖤</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಅನಿಲದ ಬಿಡುಗಡೆ 💨</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ತಾಪಮಾನದಲ್ಲಿ ಬದಲಾವಣೆ 🌡️</div></div></li>
+                        </ul>
+                    </li>
+
+                    <!-- Branch 3 -->
+                    <li class="branch level-2">
+                        <div class="node-container">
+                            <div class="node-box">ಸಮೀಕರಣಗಳ ಕ್ಯಾಲ್ಕುಲೇಶನ್</div>
+                            <div class="toggle-btn">➔</div>
+                        </div>
+                        <ul class="children-list hidden">
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಬೆಳೆಯುವ ಘಟಕಗಳು (Reactants -> Prod)</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ವಿಧಗಳು: ಕಚ್ಚಾ, ಸರಿದೂಗಿಸಿದ..</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ರಾಶಿ-ಸಂರಕ್ಷಣೆ ಸಮಗೊಳಿಸುವಿಕೆ! ⚖️</div></div></li>
+                        </ul>
+                    </li>
+
+                    <!-- Branch 4 -->
+                    <li class="branch level-2">
+                        <div class="node-container">
+                            <div class="node-box">ರಾಸಾಯನಿಕ ಕ್ರಿಯೆಯ ವಿಧಗಳು (8-Rules)</div>
+                            <div class="toggle-btn">➔</div>
+                        </div>
+                        <ul class="children-list hidden">
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಸಂಯೋಗ (Combination) 🤝</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ವಿಭಜನೆ (Decomposition) ✂️</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಸ್ಥಾನಪಲ್ಲಟ (Displacement) 🤺</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ದ್ವಿಸ್ಥಾನಪಲ್ಲಟ (D.D Reaction)</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಬಹಿರುಷ್ಣಕ (ಹೀಟ್ ಹೊಡೆ-ಸೂಸೋದು)</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಅಂತರುಷ್ಣಕ (ಹೀಟ್ ಗ್ರಹಿಸುವುದು)</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಪ್ರಕ್ಷೇಪ ಕ್ರಿಯೆ (ಕರಗಲಾರದ Precipitation)</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ರಿಡಾಕ್ಸ್ (ಉತ್ಕರ್ಷಣ & ಅಪಕರ್ಷಣ)!</div></div></li>
+                        </ul>
+                    </li>
+
+                    <!-- Branch 5 -->
+                    <li class="branch level-2">
+                        <div class="node-container">
+                            <div class="node-box">ದೈನಂದಿನ ಜೀವನದ ಎಫೆಕ್ಟ್-ಗಳು!</div>
+                            <div class="toggle-btn">➔</div>
+                        </div>
+                        <ul class="children-list hidden">
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ನಶಿಸುವಿಕೆ (Corrosion: ತುಕ್ಕು & ಆಕ್ಸೈಡ್)</div></div></li>
+                            <li class="branch level-3"><div class="node-container"><div class="node-box">ಕಮಟುವಿಕೆ (Rancidity & N2 ಆ್ಯಂಟಿ)</div></div></li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </li>
+
+        </ul>
+        
+    </div>
+
+    <!-- Mapping Dynamic Interactivity -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const toggleButtons = document.querySelectorAll(".toggle-btn");
+
+            toggleButtons.forEach(btn => {
+                btn.addEventListener("click", function() {
+                    const parentBranch = this.closest('.branch');
+                    const childrenUL = parentBranch.querySelector(':scope > .children-list');
+
+                    if(childrenUL) {
+                        if(childrenUL.classList.contains("hidden")) {
+                            childrenUL.classList.remove("hidden");
+                            this.innerHTML = "✕"; 
+                            this.style.color="#ff0000"; // Makes the cross distinctly red playfully marking
+                        } else {
+                            childrenUL.classList.add("hidden");
+                            this.innerHTML = "➔"; 
+                            this.style.color="#1a1a1a";
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

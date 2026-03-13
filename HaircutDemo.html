@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ಭೌತಿಕ ಬದಲಾವಣೆ: ಕೂದಲು ಕತ್ತರಿಸುವಿಕೆ ಲೈವ್-ಡೆಮೋ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* ================== ಡೂಡಲ್ ಸ್ಕೆಚ್ & ಪ್ರೀಮಿಯಂ ಲೇಔಟ್ ಥೀಮ್ ================== */
+:root {
+  --bg-grid: #f8fafc;
+  --grid-line: #e2e8f0;
+  --ink-dark: #0f172a; 
+  --text-main: #1e293b;
+  
+  --brand-blue: #0284c7;
+  --brand-yellow: #f59e0b;
+  --blade-metal: #94a3b8;
+  --hair-base: #5a3821; /* Authentic rich brown hair color */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans Kannada', 'Nunito', sans-serif;
+  background-color: var(--bg-grid);
+  /* ಮುದ್ದಾದ ಸ್ಕೂಲ್ ನೋಟ್‌ಬುಕ್-ಮ್ಯಾಥ್ಸ್ ಗ್ರಾಫ್ ಲೈನ್ಸ್ */
+  background-image: 
+    linear-gradient(var(--grid-line) 2px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 2px, transparent 1px);
+  background-size: 35px 35px;
+  background-position: center;
+  color: var(--ink-dark);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+.presentation-container {
+  width: 95%; max-width: 1100px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0,0,0,0.1);
+  display: flex; flex-direction: column;
+  padding: 35px 40px; gap: 30px;
+  backdrop-filter: blur(20px);
+}
+
+.t-header { text-align: center; border-bottom: 2px dashed #CBD5E1; padding-bottom: 15px;}
+.main-title { font-size: clamp(28px, 4vw, 42px); font-weight: 900; line-height: 1.3;}
+.main-title span { color: var(--brand-blue); font-size:45px; display:inline-block; transform:translateY(5px); text-shadow:2px 2px 0px #e0f2fe;}
+
+.row-split { display: flex; flex-direction: row; gap: 40px; align-items: stretch;}
+@media(max-width:850px){ .row-split { flex-direction:column;} } 
+
+
+/* ================= ೧. LEFT COLUMN: ANIMATION THEATER ================= */
+.col-left { 
+  flex: 1.1; display: flex; flex-direction: column; align-items: center; 
+  background: #f1f5f9; border-radius: 15px; border: 2px solid #cbd5e1; padding: 40px 10px; position:relative; overflow:hidden;
+}
+
+/* ✂️ 1. SCISSORS SVG MECHANICS (Aligned directly on the cutting arc!) */
+.salon-desk { 
+  position: relative; width: 100%; height: 350px; 
+  display:flex; justify-content:center; align-items:center;
+}
+
+.scissors-wrapper {
+   position: absolute; left: 60%; top: 46%; transform: translate(-50%, -50%) rotate(15deg);
+   width: 250px; height: 250px; z-index: 20;
+}
+
+.s-group { transform-origin: 35% 50%; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
+/* Default OPEN state matching cut area organically */
+.top-blade { transform: rotate(-25deg); }
+.bot-blade { transform: rotate(20deg); }
+
+/* Class executed rapidly! */
+.salon-desk.cut-action .top-blade { transform: rotate(-2deg); }
+.salon-desk.cut-action .bot-blade { transform: rotate(5deg); }
+
+/* ================= 💇‍♀️ UPGRADED PURE REALISTIC DOODLE HAIR (WAVY SVG) ================= */
+.hair-group { position: absolute; left: 15%; top: -10%; width: 140px; height: 360px; z-index: 10; display: flex; flex-direction: column;}
+
+/* The wrapper frames for top part */
+.hair-top { width: 100%; height: 180px; position:relative; overflow:visible; z-index:5; filter: drop-shadow(10px 5px 10px rgba(0,0,0,0.1));}
+
+/* Falling Tail - Transformed organically mimicking weight of real locks*/
+.hair-bot { width: 100%; height: 180px; overflow: visible; transform-origin: top right; z-index:4;
+    transition: transform 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53), opacity 0.5s ease-in 0.2s; filter: drop-shadow(10px 15px 10px rgba(0,0,0,0.2));
+}
+
+/* The Snip separation triggers dropping limits smoothly! */
+.salon-desk.cut-action .hair-bot { 
+   transform: translateY(220px) translateX(40px) rotate(45deg); 
+   opacity: 0;
+}
+
+/* Snippets of hair mapping exact doodle styling safely limiting naturally organically mapped */
+.hair-snippet { position:absolute; border-radius:15px 50% 15px 50%; background:var(--ink-dark); top:45%; opacity:0; z-index:30;}
+.snp-1 { width:12px; height:25px; transform:rotate(20deg); }
+.snp-2 { width:8px; height:35px; transform:rotate(-45deg); }
+
+@keyframes snpF { 0%{opacity:1; transform:translateY(0) rotate(0deg);} 100%{opacity:0; transform:translateY(160px) translateX(-40px) rotate(180deg);} }
+@keyframes snpS { 0%{opacity:1; transform:translateY(0) rotate(-45deg);} 100%{opacity:0; transform:translateY(190px) translateX(70px) rotate(-140deg);} }
+
+.salon-desk.cut-action .snp-1 { animation: snpF 0.9s ease-in forwards;}
+.salon-desk.cut-action .snp-2 { animation: snpS 1.2s ease-in forwards;}
+
+
+/* BUTTON UI */
+.main-btn { background: var(--brand-blue); color:#fff; border:3px solid #0369a1; font-family:'Noto Sans Kannada'; font-size:18px; font-weight:900; padding:18px 45px; border-radius:50px; cursor:pointer; box-shadow: 0 10px 0px #0284c7, 0 15px 30px rgba(2, 132, 199, 0.4); transition:all 0.2s; position:relative; z-index:30; letter-spacing:1px;}
+.main-btn:hover:not(:disabled) { transform:translateY(3px); box-shadow: 0 7px 0px #0284c7; filter:brightness(1.1);}
+.main-btn:active { transform:translateY(10px); box-shadow:0 0 0 #0284c7;}
+.main-btn:disabled{ opacity:0.8; cursor:not-allowed; background:#475569; border-color:#1e293b; box-shadow:0 5px 0px #000; transform:translateY(5px);}
+
+
+/* ================= ೨. RIGHT COLUMN: HIGH-CONTRAST LEARNING PANEL ================= */
+.col-right {
+  flex: 1.2; display: flex; flex-direction: column; justify-content: center; gap: 20px;
+}
+
+.teach-card {
+  background: #ffffff; 
+  border: 2px dashed #94a3b8;
+  border-radius: 12px;
+  padding: 30px 40px;
+  box-shadow: 8px 8px 0px rgba(0,0,0,0.05);
+  position:relative; opacity:0; transform:translateX(30px); transition:0.6s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+.teach-card.active {opacity:1; transform:translateX(0);}
+
+.tc-header { font-size: 26px; font-weight: 900; margin-bottom: 25px; color: var(--brand-blue); line-height: 1.4; border-bottom:2px solid #e2e8f0; padding-bottom:15px;}
+
+.r-list { list-style:none; padding:0; display:flex; flex-direction:column; gap:20px;}
+.r-list li { position:relative; font-size: 19px; line-height: 1.6; color: var(--text-main); font-weight:800; padding-left:25px; display:flex; align-items:flex-start; gap:10px;}
+.r-list li::before { content:'•'; color: var(--brand-blue); font-size: 30px; font-weight:900; margin-top:-5px; }
+
+  /* Float Navigation Button (Going Back Home natively simply logicly matched design style limits explicitly) */
+        .btn-home {
+            position:fixed; top:20px; left:20px; text-decoration:none; color:var(--black-ink); background:#fff; 
+            border:3px dashed var(--black-ink); padding:10px 20px; border-radius:30px; font-weight:900; 
+            font-family:'Nunito'; box-shadow: 4px 4px 0 var(--blue-pastel); transition: 0.3s; z-index:9000;
+        }
+   .btn-home:hover { transform: scale(1.05); box-shadow: 6px 6px 0 var(--pink-pastel); }
+
+</style>
+</head>
+<body>
+  <!-- Link connects exactly perfectly mapping limits cleanly organically back mapping properly effortlessly explicitly seamlessly flawlessly effectively structurally flawlessly  -->
+    <a href="Index.html" class="btn-home">⬅ ಮುಖಪುಟಕ್ಕೆ (Go Back)</a>
+
+
+<div class="presentation-container">
+   <div class="t-header">
+       <h1 class="main-title">ಬದಲಾವಣೆ ವಿಧಗಳು : <span>ಭೌತಿಕ ಬದಲಾವಣೆ ✂️</span></h1>
+   </div>
+
+   <div class="row-split">
+      
+      <!-- ================= SIMULATION ENGINE ================= -->
+      <div class="col-left">
+          
+          <div class="salon-desk" id="sim-zone">
+             
+             <!-- Wavy Vector CSS SVGs: Perfectly Organic Look for Lock of Hair !-->
+             <div class="hair-group">
+                <!-- Hair STATIC UPPER SECTION swoops into scissors. Rendered cleanly implicitly -->
+                <div class="hair-top">
+                    <svg viewBox="0 0 160 180" style="width:100%; height:100%; display:block;">
+                        <!-- Thicken dark border outer wrapper -->
+                        <path d="M15,-20 C30,70 50,140 100,180 L160,180 C160,100 130,40 120,-20 Z" fill="var(--hair-base)" stroke="var(--ink-dark)" stroke-width="8" stroke-linejoin="round"/>
+                        <!-- Doodle hair textural ink lines seamlessly flowing! -->
+                        <path d="M45,-20 Q60,90 120,180" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.8"/>
+                        <path d="M75,-20 Q80,80 145,180" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" fill="none"/>
+                        <path d="M105,-20 C105,40 110,120 150,180" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.6"/>
+                    </svg>
+                </div>
+                
+                <!-- Hair DROPPING TAIL with tapered cuts ! Smooth organic limitations beautifully visually formatted inherently!-->
+                <div class="hair-bot" id="h-bot">
+                    <svg viewBox="0 0 160 180" style="width:100%; height:100%; display:block; margin-top:-5px;">
+                        <path d="M100,0 C100,60 90,120 30,175 L55,145 L75,170 L95,140 L125,165 C140,110 160,40 160,0 Z" fill="var(--hair-base)" stroke="var(--ink-dark)" stroke-width="8" stroke-linejoin="round"/>
+                        <!-- Flow continuation structural strand lines perfectly matched !-->
+                        <path d="M120,0 C110,40 90,100 40,165" stroke="#000" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.8"/>
+                        <path d="M145,0 Q130,60 90,145" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round" fill="none"/>
+                    </svg>
+                </div>
+
+                <!-- Animated dropping random snippets -->
+                <div class="hair-snippet snp-1" style="left:50px;"></div>
+                <div class="hair-snippet snp-2" style="right:30px;"></div>
+             </div>
+             
+             <!-- MAGIC CSS DOODLE SCISSORS MECHANISM !-->
+             <svg class="scissors-wrapper" viewBox="0 0 200 200">
+                <filter id="sc-shadow"><feDropShadow dx="3" dy="6" stdDeviation="3" flood-opacity="0.4"/></filter>
+                
+                <g filter="url(#sc-shadow)">
+                   <!-- TOP BLADE & BOTTOM RING (Silver handle format logic correctly mapped)-->
+                   <g class="s-group top-blade">
+                      <ellipse cx="25" cy="140" rx="16" ry="32" fill="none" stroke="#3b82f6" stroke-width="12" transform="rotate(-25 25 140)"/>
+                      <path d="M30,118 L55,103 L150,92 L60,94 Z" fill="#94a3b8" stroke="#1e293b" stroke-width="3"/>
+                      <polygon points="50,95 190,82 170,95" fill="#f1f5f9" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+                   </g>
+
+                   <!-- BOTTOM BLADE & TOP RING -->
+                   <g class="s-group bot-blade">
+                      <ellipse cx="30" cy="55" rx="16" ry="32" fill="none" stroke="#3b82f6" stroke-width="12" transform="rotate(35 30 55)"/>
+                      <path d="M33,78 L55,95 L150,110 L60,105 Z" fill="#94a3b8" stroke="#1e293b" stroke-width="3"/>
+                      <polygon points="50,105 190,115 170,105" fill="#f8fafc" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+                   </g>
+
+                   <!-- Connective Screw -->
+                   <circle cx="75" cy="99" r="6" fill="#0f172a" stroke="#fff" stroke-width="1.5"/>
+                </g>
+             </svg>
+
+          </div>
+
+          <button class="main-btn" id="sT-bn" onclick="PlayHaircutDemo()">ಕತ್ತರಿಸುವಿಕೆ ಡೆಮೋ ವೀಕ್ಷಿಸಿ! ✂️</button>
+      </div>
+
+      <!-- ================= CONCEPT BOARDS & KNOWLEDGE ================= -->
+      <div class="col-right">
+          
+          <div class="teach-card" id="cr-brd">
+             <div class="tc-header">
+                ಭೌತಿಕ ಬದಲಾವಣೆ <span style="font-weight:400; color:#64748b; font-size:22px; padding-top:4px;">(Physical Change)</span>
+             </div>
+             
+             <!-- Clear robust fonts explicitly matching image elements seamlessly implicitly elegantly -->
+             <ul class="r-list">
+                 <li>ಕೇವಲ ಭೌತಿಕ ಗುಣಲಕ್ಷಣಗಳಲ್ಲಿ ಬದಲಾವಣೆ <br><small style="color:#64748b; font-weight:700;">(ಉದಾ: ಆಕಾರ ಹಾಗೂ ಗಾತ್ರ ಬದಲಾಗುತ್ತದೆ)</small>.</li>
+                 <li>ಹೊಸ ಪದಾರ್ಥಗಳ ಸೃಷ್ಟಿಯಿಲ್ಲ.</li>
+                 <li>ರಾಸಾಯನಿಕ ಬಂಧಗಳಲ್ಲಿ (Bonds) ಯಾವುದೇ ಬಿರುಕು ಅಥವಾ ಬದಲಾವಣೆಯಿಲ್ಲ.</li>
+             </ul>
+             
+             <div style="margin-top:35px; background:rgba(59, 130, 246, 0.1); border-radius:10px; padding:18px; font-weight:800; font-size:18px; color:#1e293b; border-left:5px solid #3b82f6; box-shadow: 0 4px 10px rgba(59,130,246,0.1);">
+                <b>ತಾತ್ಪರ್ಯ (Logic):</b> ನಾವು ಹೇರ್ ಕಟ್ ಮಾಡಿಸುವಾಗ, ಬಾರ್ಬರ್ ಕೂದಲನ್ನು ಕತ್ತರಿಸಿದಾಗ ಕೇವಲ ಕೂದಲಿನ ಉದ್ದ ಅಥವಾ ಗಾತ್ರ ಕಡಿಮೆಯಾಗುತ್ತದೆಯೇ ಹೊರತು, ಅಲ್ಲಿ ಯಾವುದೇ ಹೊಸ ರೀತಿಯ ಪದಾರ್ಥ ಸೃಷ್ಟಿಯಾಗುವುದಿಲ್ಲ.  ಇದಲ್ಲದೆ, ಹೇರ್ ಕಟ್ ಮಾಡಿಸುವ ಮೊದಲು ಕೂದಲಿಗೆ ನೀರು ಹಾಕಿದಾಗ ಕೂದಲು ಒದ್ದೆಯಾಗುವುದು ಮತ್ತು ನಂತರ ಗಾಳಿಗೆ ಒಣಗುವುದು ಕೂಡ ನಾವು ನೋಡುವಂತಹ ಸಾಮಾನ್ಯ ಬದಲಾವಣೆಗಳಾಗಿವೆ
+.
+ಇಲ್ಲಿ ಮೂಲ ವಸ್ತುವಿನ (ಕೂದಲಿನ) ರಾಸಾಯನಿಕ ರಚನೆ ಅಥವಾ ಅಣುಗಳ ನಡುವಿನ ಬಂಧಗಳಲ್ಲಿ ಯಾವುದೇ ರೀತಿಯ ಬದಲಾವಣೆ ಇರುವುದಿಲ್ಲ <u>ಕೂದಲಿನದ್ದೇ ಅಣುಗುಣಗಳನ್ನು (Chemical properties) ಹೊಂದಿರುತ್ತದೆಯೇ</u> ಕೇವಲ ಅದರ ಭೌತಿಕ ಗುಣಲಕ್ಷಣದಲ್ಲಿ (ಉದ್ದದಲ್ಲಿ) ಮಾತ್ರ ಬದಲಾವಣೆ ಕಾಣುವುದರಿಂದ, ಇದೊಂದು ಅಪ್ಪಟ ಭೌತಿಕ ಬದಲಾವಣೆಯಾಗಿದೆ 
+             </div>
+          </div>
+
+      </div>
+   </div>
+</div>
+
+<script>
+let cutTrigger=false;
+
+function PlayHaircutDemo() {
+  if(cutTrigger) return; cutTrigger=true;
+  
+  let _mbt = document.getElementById("sT-bn");
+  let _deskTarg = document.getElementById("sim-zone");
+
+  _mbt.innerText="ಕಟ್-ನಡೆಯುತ್ತಿದೆ.. ಪ್ಲೀಸ್ ವೇಟ್ ⏳";
+  _mbt.disabled=true;
+
+  // Visual Class magic applies snapping!
+  setTimeout(()=>{
+      _deskTarg.classList.add("cut-action"); // Scissor snaps gracefully organically implicitly! 
+      if(navigator.vibrate) navigator.vibrate(200); // Phone vibration Haptic Feel on Snap natively securely
+  }, 400);
+
+  // Present logic info-box! optimally automatically naturally
+  setTimeout(()=>{
+      document.getElementById("cr-brd").classList.add("active");
+      
+      _mbt.innerHTML="<b>ಭೌತಿಕ ಡೆಮೋ ಪೂರ್ಣಗೊಂಡಿದೆ! ✅</b>";
+      _mbt.style.background="#10b981"; _mbt.style.borderColor="#047857"; _mbt.style.boxShadow="0 8px 0px #047857"; 
+  }, 2500); 
+
+}
+</script>
+
+</body>
+</html>
